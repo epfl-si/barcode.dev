@@ -24,31 +24,20 @@ help:
 	@echo "  make start-frontend       — Start the frontend development server"
 	@echo "  make start-backend        — Start the backend development server"
 
-FRONTEND_ENV := /keybase/team/epfl_lil/frontend/local/env
-BACKEND_ENV  := /keybase/team/epfl_lil/backend/local/env
-
-ifeq ($(wildcard $(FRONTEND_ENV)),)
-$(error Missing required env file: $(FRONTEND_ENV))
-endif
-ifeq ($(wildcard $(BACKEND_ENV)),)
-$(error Missing required env file: $(BACKEND_ENV))
-endif
-include $(FRONTEND_ENV)
-include $(BACKEND_ENV)
-export
+.PHONY: fetch-env
+fetch-env:
+	@echo "Récupération du .env Frontend..."
+	keybase fs read /keybase/team/epfl_lil/frontend/local/env > ./lil-frontend/.env
+	@echo "Récupération du .env Backend..."
+	keybase fs read /keybase/team/epfl_lil/backend/local/env > ./lil-backend/.env
 
 .PHONY: print-env
 print-env:
 	@echo "----- Frontend -----"
-	@echo "LIL_REACT_APP_AUTH_SERVER_URL=${LIL_REACT_APP_AUTH_SERVER_URL}"
-	@echo "LIL_REACT_APP_HOMEPAGE_URL=${LIL_REACT_APP_HOMEPAGE_URL}"
-	@echo "LIL_REACT_APP_GRAPHQL_ENDPOINT_URL=${LIL_REACT_APP_GRAPHQL_ENDPOINT_URL}"
-	@echo "LIL_REACT_APP_ENDPOINT_URL=${LIL_REACT_APP_ENDPOINT_URL}"
-	@echo "LIL_OIDC_SCOPE=${LIL_OIDC_SCOPE}"
-	@echo "LIL_OIDC_CLIENT_ID=${LIL_OIDC_CLIENT_ID}"
+	keybase fs read /keybase/team/epfl_lil/frontend/local/env
 	@echo ""
 	@echo "----- Backend -----"
-	@echo "DATABASE_URL=${DATABASE_URL}"
+	keybase fs read /keybase/team/epfl_lil/backend/local/env
 
 ######## Sub-Repositories
 
@@ -82,12 +71,12 @@ install-frontend: lil-frontend
 	cd lil-frontend && npm install
 
 .PHONY: install
-install: install-backend install-frontend
+install: fetch-env install-backend install-frontend
 
 ######## App
 
 .PHONY: start-db
-start-db:
+start-db: fetch-env
 	@docker compose up
 
 .PHONY: stop-db
@@ -95,9 +84,9 @@ stop-db:
 	@docker compose down
 
 .PHONY: start-backend
-start-backend: lil-backend
+start-backend: fetch-env lil-backend
 	cd lil-backend && npm run dev
 
 .PHONY: start-frontend
-start-frontend: lil-frontend
+start-frontend: fetch-env lil-frontend
 	cd lil-frontend && npm run dev
