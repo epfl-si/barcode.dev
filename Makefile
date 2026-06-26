@@ -60,8 +60,11 @@ lil-frontend:
 lil-backend:
 	$(call _git_clone, epfl-si/lil.backend, main)
 
+lil-ops:
+	$(call _git_clone, epfl-si/lil.ops, main)
+
 .PHONY: checkout
-checkout: lil-frontend lil-backend
+checkout: lil-frontend lil-backend lil-ops
 
 _find_git_depots := find . \( -path ./volumes -prune -false \) -o -name .git -prune |xargs -n 1 dirname|grep -v 'ansible-deps-cache'
 .PHONY: git-pull
